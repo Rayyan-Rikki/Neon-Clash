@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Neon Clash</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Rikki Neon Clash</h1>
+        <div id="status">Player X's turn</div>
+        <div class="board">
+            <div class="cell" onclick="makeMove(0)"></div>
+            <div class="cell" onclick="makeMove(1)"></div>
+            <div class="cell" onclick="makeMove(2)"></div>
+            <div class="cell" onclick="makeMove(3)"></div>
+            <div class="cell" onclick="makeMove(4)"></div>
+            <div class="cell" onclick="makeMove(5)"></div>
+            <div class="cell" onclick="makeMove(6)"></div>
+            <div class="cell" onclick="makeMove(7)"></div>
+            <div class="cell" onclick="makeMove(8)"></div>
+        </div>
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+
+    <div class="audio-controls">
+        <button onclick="toggleMusic()" id="musicToggle">🔇 Music Off</button>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
+    </div>
+
+    <audio id="backgroundMusic" loop>
+        <source src="{{ url_for('static', filename='background-music.mp3') }}" type="audio/mp3">
+    </audio>
+
+    <div class="mode-selector">
+        <button onclick="setMode('player')" class="mode-btn active" id="playerBtn">Player vs Player</button>
+        <button onclick="setMode('bot')" class="mode-btn" id="botBtn">Player vs Bot</button>
+    </div>
+
+    <div id="difficultySelector" class="difficulty-selector" style="display: none;">
+        <h3>Select Bot Difficulty:</h3>
+        <div class="difficulty-buttons">
+            <button onclick="setDifficulty('easy')" class="difficulty-btn active" id="easyBtn">
+                Easy Mode
+                <span class="coins">+5 coins</span>
+            </button>
+            <button onclick="setDifficulty('medium')" class="difficulty-btn" id="mediumBtn">
+                Medium Mode
+                <span class="coins">+10 coins</span>
+            </button>
+            <button onclick="setDifficulty('hard')" class="difficulty-btn" id="hardBtn">
+                Hard Mode
+                <span class="coins">+15 coins</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="resultBanner" class="result-banner" style="display: none;">
+        <h2 id="resultMessage"></h2>
+    </div>
+
+    <!-- Game Modal -->
+    <div id="gameModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div id="modalMessage" class="modal-message"></div>
+        </div>
+    </div>
+
+    <!-- Shop Modal -->
+    <div id="shopModal" class="modal">
+        <div class="modal-content shop-content">
+            <span class="close-btn" onclick="closeShop()">&times;</span>
+            <h2>Skin Shop</h2>
+            <div class="shop-container">
+                <button class="scroll-btn left" onclick="scrollSkins('left')">❮</button>
+                <div class="shop-items-container">
+                    <div class="shop-items">
+                        <div class="shop-item">
+                            <h3>Default Theme</h3>
+                            <div class="skin-preview">X O</div>
+                            <button onclick="changeSkin('default')" class="buy-btn">Select</button>
+                        </div>
+                        <div class="shop-item">
+                            <h3>Fire Theme</h3>
+                            <div class="skin-preview">🔥 💫</div>
+                            <button onclick="changeSkin('fire')" id="fireThemeBtn" class="buy-btn">
+                                Buy - 50 coins
+                            </button>
+                        </div>
+                        <div class="shop-item">
+                            <h3>Ice Theme</h3>
+                            <div class="skin-preview">❄️ 🌟</div>
+                            <button onclick="changeSkin('ice')" id="iceThemeBtn" class="buy-btn">
+                                Buy - 30 coins
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button class="scroll-btn right" onclick="scrollSkins('right')">❯</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="coin-counter">
+        <span>🪙 Coins: </span>
+        <span id="coinCount">0</span>
+    </div>
+
+    <button onclick="openShop()" class="shop-btn">🛍️ Shop</button>
+
+    <script>
+        const music = document.getElementById('backgroundMusic');
+        const musicToggle = document.getElementById('musicToggle');
+        const volumeSlider = document.getElementById('volumeSlider');
+        let isMusicPlaying = false;
+        let currentMode = 'player';
+        let currentDifficulty = 'easy';
+        let currentSkin = 'default';
+        let currentCoins = 0;
+        let ownedSkins = ['default'];
+        let currentScrollPosition = 0;
+        const itemWidth = 270; // Width of item + gap
+
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                music.pause();
+                musicToggle.textContent = '🔇 Music Off';
+            } else {
+                music.play();
+                musicToggle.textContent = '🔊 Music On';
+            }
+            isMusicPlaying = !isMusicPlaying;
+        }
+
+        volumeSlider.addEventListener('input', (e) => {
+            music.volume = e.target.value;
+        });
+
+        function makeMove(position) {
+            fetch(`/play/${position}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        return;
+                    }
+                    
+                    updateBoard(data.board);
+                    
+                    if (data.winner) {
+                        let message = "";
+                        if (data.winner === 'draw') {
+                            message = "It's a draw! 🤝";
+                        } else if (data.winner === 'X') {
+                            if (game_state.mode === 'bot') {
+                                const coinsEarned = {
+                                    'easy': 5,
+                                    'medium': 10,
+                                    'hard': 15
+                                }[game_state.bot_difficulty];
+                                message = `🎉 Hurray! You won!\n+${coinsEarned} coins! 🪙`;
+                            } else {
+                                message = "🎉 Hurray! Player X won!";
+                            }
+                        } else {
+                            message = game_state.mode === 'bot' ? 
+                                "😢 You lost! Better luck next time!" : 
+                                "🎉 Player O won!";
+                        }
+                        showGameModal(message);
+                        updateCoins();
+                    }
+                });
+        }
+
+        function updateBoard(board) {
+            const cells = document.getElementsByClassName('cell');
+            for (let i = 0; i < cells.length; i++) {
+                let symbol = board[i];
+                if (symbol) {
+                    if (currentSkin === 'fire') {
+                        symbol = symbol === 'X' ? '🔥' : '💫';
+                    } else if (currentSkin === 'ice') {
+                        symbol = symbol === 'X' ? '❄️' : '🌟';
+                    }
+                    cells[i].textContent = symbol;
+                    cells[i].setAttribute('data-value', symbol);
+                    cells[i].classList.add('pop');
+                    setTimeout(() => {
+                        cells[i].classList.remove('pop');
+                    }, 300);
+                } else {
+                    cells[i].textContent = '';
+                    cells[i].removeAttribute('data-value');
+                }
+            }
+        }
+
+        function resetGame() {
+            fetch('/reset', { method: 'POST' })
+                .then(response => response.json())
+                .then(() => {
+                    const cells = document.getElementsByClassName('cell');
+                    for (let i = 0; i < cells.length; i++) {
+                        cells[i].textContent = '';
+                        cells[i].removeAttribute('data-value');
+                    }
+                    document.getElementById('status').textContent = "Player X's turn";
+                    document.getElementById('resultBanner').style.display = 'none'; // Hide the banner
+                    closeModal(); // Hide the modal
+                });
+        }
+
+        function setMode(mode) {
+            fetch(`/set_mode/${mode}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    currentMode = mode;
+                    resetGame();
+                    updateModeButtons(mode);
+                    // Show/hide difficulty selector
+                    document.getElementById('difficultySelector').style.display = 
+                        mode === 'bot' ? 'block' : 'none';
+                });
+        }
+
+        function updateModeButtons(mode) {
+            document.getElementById('playerBtn').classList.toggle('active', mode === 'player');
+            document.getElementById('botBtn').classList.toggle('active', mode === 'bot');
+        }
+
+        function setDifficulty(difficulty) {
+            fetch(`/set_difficulty/${difficulty}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    currentDifficulty = difficulty;
+                    updateDifficultyButtons(difficulty);
+                    resetGame();
+                });
+        }
+
+        function updateDifficultyButtons(difficulty) {
+            document.getElementById('easyBtn').classList.toggle('active', difficulty === 'easy');
+            document.getElementById('mediumBtn').classList.toggle('active', difficulty === 'medium');
+            document.getElementById('hardBtn').classList.toggle('active', difficulty === 'hard');
+        }
+
+        function showGameModal(message) {
+            const modal = document.getElementById('gameModal');
+            const modalMessage = document.getElementById('modalMessage');
+            modalMessage.innerHTML = message.replace('\n', '<br>');
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('gameModal');
+            modal.style.display = 'none';
+        }
+
+        function updateCoins() {
+            fetch('/get_coins')
+                .then(response => response.json())
+                .then(data => {
+                    currentCoins = data.coins;
+                    document.getElementById('coinCount').textContent = data.coins;
+                });
+        }
+
+        function openShop() {
+            document.getElementById('shopModal').style.display = 'block';
+            currentScrollPosition = 0;
+            const container = document.querySelector('.shop-items');
+            container.style.transform = 'translateX(0)';
+            updateScrollButtons();
+            updateShopButtons();
+        }
+
+        function closeShop() {
+            document.getElementById('shopModal').style.display = 'none';
+        }
+
+        function changeSkin(skin) {
+            const skinPrices = {
+                'fire': 50,
+                'ice': 30
+            };
+
+            if (!ownedSkins.includes(skin) && skinPrices[skin]) {
+                if (currentCoins >= skinPrices[skin]) {
+                    fetch(`/buy_skin/${skin}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                ownedSkins.push(skin);
+                                currentSkin = skin;
+                                updateCoins();
+                                updateShopButtons();
+                                updateBoard(game_state.board);
+                                showModal(`🎉 ${skin.charAt(0).toUpperCase() + skin.slice(1)} skin purchased!`);
+                            }
+                        });
+                } else {
+                    showModal(`❌ Not enough coins! You need ${skinPrices[skin]} coins to buy this skin.`);
+                }
+            } else {
+                currentSkin = skin;
+                updateBoard(game_state.board);
+                showModal(`✨ ${skin.charAt(0).toUpperCase() + skin.slice(1)} skin selected!`);
+            }
+            closeShop();
+        }
+
+        function updateShopButtons() {
+            const fireBtn = document.getElementById('fireThemeBtn');
+            const iceBtn = document.getElementById('iceThemeBtn');
+
+            if (ownedSkins.includes('fire')) {
+                fireBtn.textContent = 'Select';
+                fireBtn.classList.add('owned');
+            } else {
+                fireBtn.textContent = 'Buy - 50 coins';
+                fireBtn.classList.remove('owned');
+            }
+
+            if (ownedSkins.includes('ice')) {
+                iceBtn.textContent = 'Select';
+                iceBtn.classList.add('owned');
+            } else {
+                iceBtn.textContent = 'Buy - 30 coins';
+                iceBtn.classList.remove('owned');
+            }
+        }
+
+        function scrollSkins(direction) {
+            const container = document.querySelector('.shop-items');
+            const maxScroll = container.scrollWidth - container.parentElement.clientWidth;
+            
+            if (direction === 'left') {
+                currentScrollPosition = Math.max(currentScrollPosition - itemWidth, 0);
+            } else {
+                currentScrollPosition = Math.min(currentScrollPosition + itemWidth, maxScroll);
+            }
+            
+            container.style.transform = `translateX(-${currentScrollPosition}px)`;
+            updateScrollButtons();
+        }
+
+        function updateScrollButtons() {
+            const container = document.querySelector('.shop-items');
+            const maxScroll = container.scrollWidth - container.parentElement.clientWidth;
+            
+            const leftBtn = document.querySelector('.scroll-btn.left');
+            const rightBtn = document.querySelector('.scroll-btn.right');
+            
+            leftBtn.disabled = currentScrollPosition <= 0;
+            rightBtn.disabled = currentScrollPosition >= maxScroll;
+        }
+
+        // Call updateCoins when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCoins();
+            updateScrollButtons();
+        });
+
+        // Update coins every few seconds
+        setInterval(updateCoins, 2000);
+
+        // Add this CSS animation
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                @keyframes pop {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.2); }
+                    100% { transform: scale(1); }
+                }
+                .pop {
+                    animation: pop 0.3s ease-out;
+                }
+            </style>
+        `);
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('gameModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html> 

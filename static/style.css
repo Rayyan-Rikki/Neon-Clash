@@ -1,0 +1,610 @@
+body {
+    background-color: #000;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(45deg, #000000, #1a0033);
+}
+
+.container {
+    text-align: center;
+    padding: 20px;
+}
+
+h1 {
+    font-size: 4em;
+    margin: 20px 0;
+    text-shadow: 
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 20px #0ff,
+        0 0 30px #0ff,
+        0 0 40px #0ff;
+    animation: neon-flicker 1.5s infinite alternate;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    gap: 5px;
+    margin: 20px auto;
+    width: fit-content;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    border: 2px solid #0ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    text-shadow: 0 0 10px #0ff;
+    transition: all 0.3s ease;
+}
+
+.cell:hover {
+    background: rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 15px #0ff;
+    transform: scale(1.05);
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 18px;
+    margin-top: 20px;
+    cursor: pointer;
+    background: transparent;
+    border: 2px solid #0ff;
+    color: #fff;
+    border-radius: 5px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 5px #0ff;
+    transition: all 0.3s ease;
+    font-family: 'Orbitron', sans-serif;
+}
+
+button:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 20px #0ff;
+}
+
+#status {
+    font-size: 24px;
+    margin: 20px 0;
+    text-shadow: 0 0 10px #0ff;
+}
+
+.audio-controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.audio-controls button {
+    padding: 10px;
+    font-size: 14px;
+}
+
+@keyframes neon-flicker {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% {
+        text-shadow: 
+            0 0 5px #fff,
+            0 0 10px #fff,
+            0 0 20px #0ff,
+            0 0 30px #0ff,
+            0 0 40px #0ff;
+    }
+    20%, 24%, 55% {
+        text-shadow: none;
+    }
+}
+
+/* X and O styling */
+.cell[data-value="X"] {
+    color: #ff00ff;
+    text-shadow: 0 0 10px #ff00ff;
+}
+
+.cell[data-value="O"] {
+    color: #00ff00;
+    text-shadow: 0 0 10px #00ff00;
+}
+
+.mode-selector {
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.mode-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background: transparent;
+    border: 2px solid #0ff;
+    color: #fff;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.mode-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 20px #0ff;
+}
+
+.mode-btn.active {
+    background: rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 15px #0ff;
+}
+
+.difficulty-selector {
+    margin: 20px auto;
+    text-align: center;
+    max-width: 600px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 2px solid #0ff;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.difficulty-selector h3 {
+    color: #0ff;
+    margin-bottom: 15px;
+    text-shadow: 0 0 5px #0ff;
+}
+
+.difficulty-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.difficulty-btn {
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    background: transparent;
+    border: 2px solid #0ff;
+    color: #fff;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-family: 'Orbitron', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.difficulty-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 20px #0ff;
+    transform: scale(1.05);
+}
+
+.difficulty-btn.active {
+    background: rgba(0, 255, 255, 0.3);
+    box-shadow: 0 0 15px #0ff;
+}
+
+.difficulty-btn .coins {
+    font-size: 14px;
+    color: #ffd700;
+    text-shadow: 0 0 5px #ffd700;
+}
+
+.result-banner {
+    margin: 20px 0;
+    padding: 20px;
+    border-radius: 10px;
+    color: #fff;
+    text-shadow: 0 0 10px #0ff;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.result-banner.winner {
+    background: rgba(68, 0, 255, 0.7); /* Green for win */
+}
+
+.result-banner.loser {
+    background: rgba(255, 0, 0, 0.7); /* Red for loss */
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s ease-in;
+}
+
+.modal-content {
+    background-color: #1a0033;
+    margin: 15% auto;
+    padding: 20px;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 10px;
+    border: 2px solid #0ff;
+    box-shadow: 
+        0 0 20px rgba(0, 255, 255, 0.3),
+        0 0 40px rgba(0, 255, 255, 0.2);
+    position: relative;
+    animation: modalPop 0.3s ease-out;
+}
+
+.modal-message {
+    color: #0ff;
+    text-align: center;
+    font-size: 24px;
+    margin: 20px 0;
+    padding: 10px;
+    text-shadow: 
+        0 0 5px #fff,
+        0 0 10px #0ff,
+        0 0 20px #0ff;
+}
+
+.close-btn {
+    color: #0ff;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    color: #fff;
+    text-shadow: 0 0 10px #0ff;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalPop {
+    0% { transform: scale(0.7); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.coin-counter {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 20px;
+    color: #ffd700;
+    font-size: 20px;
+    text-shadow: 0 0 5px #ffd700;
+}
+
+.shop-btn {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #0ff;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 18px;
+    text-shadow: 0 0 5px #0ff;
+}
+
+.shop-content {
+    background: #1a0033;
+    color: #fff;
+    padding: 30px;
+}
+
+.shop-items {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.shop-item {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 2px solid #0ff;
+    transition: all 0.3s ease;
+    width: 200px;
+}
+
+.shop-item:hover {
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    transform: scale(1.02);
+}
+
+.skin-preview {
+    font-size: 30px;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+.buy-btn {
+    background: #0ff;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.buy-btn:hover {
+    background: #00cccc;
+    transform: scale(1.05);
+}
+
+.buy-btn.owned {
+    background: #00ff00;
+    color: #000;
+}
+
+.coin-earned {
+    animation: coinPop 0.5s ease-out;
+    color: gold;
+    text-shadow: 0 0 10px gold;
+}
+
+@keyframes coinPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Add click effect */
+.cell:active {
+    transform: scale(0.95);
+}
+
+.modal-content {
+    background: #1a0033;
+    color: #fff;
+    border: 2px solid #0ff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+#modalMessage {
+    font-size: 24px;
+    margin: 20px 0;
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* Add specific styles for ice theme */
+.cell[data-value="❄️"] {
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff;
+}
+
+.cell[data-value="🌟"] {
+    color: #ffffff;
+    text-shadow: 0 0 10px #ffffff;
+}
+
+.shop-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+}
+
+.shop-items-container {
+    overflow: hidden;
+    width: 100%;
+    padding: 20px 0;
+}
+
+.shop-items {
+    display: flex;
+    gap: 20px;
+    transition: transform 0.3s ease;
+    width: fit-content;
+}
+
+.shop-item {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 2px solid #0ff;
+    transition: all 0.3s ease;
+    width: 250px;
+    flex-shrink: 0;
+}
+
+.shop-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.scroll-btn {
+    background: rgba(0, 255, 255, 0.1);
+    border: 2px solid #0ff;
+    color: #0ff;
+    font-size: 24px;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+.scroll-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 15px #0ff;
+}
+
+.scroll-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.scroll-btn.left {
+    left: 0;
+}
+
+.scroll-btn.right {
+    right: 0;
+}
+
+.skin-preview {
+    font-size: 36px;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.buy-btn {
+    background: transparent;
+    border: 2px solid #0ff;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.buy-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 10px #0ff;
+}
+
+.buy-btn.owned {
+    background: #00ff00;
+    border-color: #00ff00;
+    color: #000;
+}
+
+/* Update these styles for a larger shop modal */
+.modal-content.shop-content {
+    width: 90%;
+    max-width: 900px;
+    margin: 5% auto;
+    padding: 30px;
+    background: #1a0033;
+}
+
+.shop-items {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 30px;
+    flex-wrap: nowrap;
+}
+
+.shop-item {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+    border: 2px solid #0ff;
+    transition: all 0.3s ease;
+    width: 250px;
+    min-height: 300px;
+}
+
+.shop-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.shop-item h3 {
+    color: #0ff;
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #0ff;
+}
+
+.skin-preview {
+    font-size: 48px;
+    margin: 30px 0;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.buy-btn {
+    background: transparent;
+    border: 2px solid #0ff;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 18px;
+    margin-top: 20px;
+    width: 80%;
+}
+
+.buy-btn:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 15px #0ff;
+}
+
+.buy-btn.owned {
+    background: #00ff00;
+    border-color: #00ff00;
+    color: #000;
+}
+
+/* Update modal title */
+.modal-content h2 {
+    color: #0ff;
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px #0ff;
+}
+
+/* Make close button more visible */
+.close-btn {
+    font-size: 32px;
+    right: 20px;
+    top: 15px;
+}
